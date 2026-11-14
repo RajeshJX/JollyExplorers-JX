@@ -1,0 +1,27 @@
+(function(){
+  const categories=[
+    {name:'Build & Invent',icon:'🛠️',note:'Make something clever',color:'#fff0d3'},
+    {name:'Circuits & Robots',icon:'🤖',note:'Bring ideas to life',color:'#ddf4ee'},
+    {name:'Science Lab',icon:'🧪',note:'Try a little what if',color:'#eee5ff'},
+    {name:'Nature & Earth',icon:'🌿',note:'Explore our planet',color:'#e5f3d9'},
+    {name:'World Adventures',icon:'🧭',note:'Go somewhere new',color:'#dff1ff'},
+    {name:'Everyday Skills',icon:'🏡',note:'Practice real-life smarts',color:'#ffe6df'},
+    {name:'Puzzles & Brain Games',icon:'🧩',note:'Solve curious clues',color:'#fff0c9'},
+    {name:'Art, Music & Stories',icon:'🎨',note:'Make it your own',color:'#ffe2ed'}
+  ];
+  const projects=[
+    {id:'lighthouse',title:'Light the Lighthouse',category:'Circuits & Robots',description:'Complete a circuit and help a little ship find its way.',age:'Ages 6–9',icon:'🗼',color:'#dff4ff',goal:'Electricity needs a complete loop.',trail:'Spark',order:1},
+    {id:'bridge',title:'Build a Bridge',category:'Build & Invent',description:'Add supports, test a load, and see what makes a bridge steady.',age:'Ages 7–10',icon:'🌉',color:'#e5f3d9',goal:'Supports help structures carry weight.',trail:'Build',order:2},
+    {id:'rover',title:'Rescue Rover',category:'World Adventures',description:'Give a rover clear steps to reach a friend on the grid.',age:'Ages 6–10',icon:'🛞',color:'#eee5ff',goal:'Practice sequencing and debugging.',trail:'Code',order:3},
+    {id:'fossil',title:'Fossil Finder',category:'Nature & Earth',description:'Brush away layers and discover who lived long ago.',age:'Ages 5–9',icon:'🦴',color:'#fff0d3'},
+    {id:'cloud',title:'Cloud Catcher',category:'Science Lab',description:'Make a rain cloud and explore what changes weather.',age:'Ages 7–10',icon:'🌦️',color:'#dff1ff'},
+    {id:'garden',title:'Garden Market',category:'Everyday Skills',description:'Grow, sort, and sell fresh garden goodies.',age:'Ages 7–11',icon:'🥕',color:'#ffe6df'}
+  ];
+  const trail=[{name:'Spark',icon:'⚡',id:'lighthouse',summary:'See what a complete circuit needs.'},{name:'Build',icon:'🧱',id:'bridge',summary:'Try supports and test a bridge.'},{name:'Code',icon:'🧭',id:'rover',summary:'Plan steps and guide a rover.'}];
+  const key='jx-explored-v1';let chosen='';const $=s=>document.querySelector(s);function done(){try{return JSON.parse(localStorage.getItem(key)||'[]')}catch(e){return[]}}
+  function renderTrail(){const d=done();$('#trail-progress').textContent=d.length+' of 3 explored';$('#trail-cards').innerHTML=trail.map((x,i)=>'<article class="trail-card"><span class="trail-number">'+(d.includes(x.id)?'✓':x.icon)+'</span><div><h3>'+ (i+1)+' · '+x.name+'</h3><p>'+x.summary+' <strong>'+projects.find(p=>p.id===x.id).goal+'</strong></p><button class="trail-link" data-open="'+x.id+'">Open '+x.name.toLowerCase()+' →</button></div><span class="trail-state">'+(d.includes(x.id)?'Explored':'Next')+'</span></article>').join('');$('#trail-cards').querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openProject(b.dataset.open)))}
+  function renderCategories(){const h=$('#category-grid');h.innerHTML=categories.map(c=>'<button class="category-card '+(chosen===c.name?'active':'')+'" data-category="'+c.name+'"><span class="category-icon" style="background:'+c.color+'">'+c.icon+'</span><span><strong>'+c.name+'</strong><small>'+c.note+'</small></span></button>').join('');h.querySelectorAll('[data-category]').forEach(b=>b.addEventListener('click',()=>{chosen=chosen===b.dataset.category?'':b.dataset.category;renderCategories();renderProjects()}))}
+  function renderProjects(){const list=projects.filter(p=>!chosen||p.category===chosen);$('#project-grid').innerHTML=list.map(p=>'<article class="project-card"><div class="project-art" style="background:'+p.color+'"><span class="project-tag">'+(p.order?'PLAYABLE':'COMING SOON')+'</span>'+p.icon+'</div><div class="project-body"><h3>'+p.title+'</h3><p>'+p.description+'</p><div class="project-meta"><span class="project-age">'+p.age+'</span><button class="project-go" data-open="'+p.id+'">'+(p.order?'Play':'Coming soon')+' →</button></div></div></article>').join('');$('#project-description').textContent=chosen?'Showing adventures in '+chosen+'.':'Three starter projects are ready to explore.';$('#clear-filter').classList.toggle('hidden',!chosen);$('#project-grid').querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openProject(b.dataset.open)))}
+  function openProject(id){const p=projects.find(x=>x.id===id);if(!p||!p.order||!window.JXSimulators||!window.JXSimulators[id])return;$('#simulator-category').textContent=p.category+' · '+p.age;$('#simulator-title').textContent=p.title;const root=$('#simulator-content');root.innerHTML='';window.JXSimulators[id].mount(root,()=>{let d=done();if(!d.includes(id)){d.push(id);localStorage.setItem(key,JSON.stringify(d))}renderTrail()});$('#simulator-dialog').showModal()}
+  $('#show-all').addEventListener('click',()=>{chosen='';renderCategories();renderProjects()});$('#clear-filter').addEventListener('click',()=>{chosen='';renderCategories();renderProjects()});$('#close-dialog').addEventListener('click',()=>$('#simulator-dialog').close());$('#simulator-dialog').addEventListener('click',e=>{if(e.target===$('#simulator-dialog'))$('#simulator-dialog').close()});$('#simulator-dialog').addEventListener('close',()=>$('#simulator-content').innerHTML='');renderTrail();renderCategories();renderProjects();
+})();
