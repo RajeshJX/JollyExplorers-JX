@@ -19,8 +19,10 @@
     {id:'cloud',title:'Cloud Catcher',category:'Science Lab',description:'Change warmth and water in the air to help a cloud make rain.',age:'Ages 7–10',icon:'🌦️',color:'#dff1ff',order:5},
     {id:'garden',title:'Garden Market',category:'Everyday Skills',description:'Balance water and sunshine, grow a harvest, and count your market coins.',age:'Ages 7–11',icon:'🥕',color:'#ffe6df',order:6},
     {id:'world',title:'Map Mission',category:'World Adventures',description:'Guide an explorer across a map to reach a lookout safely.',age:'Ages 6–10',icon:'🧭',color:'#dff1ff',order:7},
-    {id:'puzzle',title:'Pattern Pop',category:'Puzzles & Brain Games',description:'Spot the rule and choose what comes next in three playful patterns.',age:'Ages 5–10',icon:'🧩',color:'#fff0c9',order:8},
-    {id:'story',title:'Story Studio',category:'Art, Music & Stories',description:'Choose a hero, place, and special thing to make a tiny adventure.',age:'Ages 5–10',icon:'🎨',color:'#ffe2ed',order:9}
+    {id:'puzzle',title:'Pattern Pop',category:'Puzzles & Brain Games',description:'Spot the rule and choose what comes next in three playful patterns.',age:'Ages 5–10',icon:'🧩',color:'#fff0c9',order:8},    {id:'story',title:'Story Studio',category:'Art, Music & Stories',description:'Choose a hero, place, and special thing to make a tiny adventure.',age:'Ages 5–10',icon:'🎨',color:'#ffe2ed',order:9},
+    {id:'lock',title:'Inside a Door Lock',category:'Build & Invent',description:'Line up the pins, turn the key, and see how a latch opens.',age:'Ages 8–15',icon:'🔐',color:'#e5eaff',order:10},
+    {id:'car-ac',title:'Cool Air under the Bonnet',category:'Science Lab',description:'Follow heat and refrigerant through a car air-conditioning loop.',age:'Ages 9–15',icon:'🚗',color:'#dff1ff',order:11},
+    {id:'piston-engine',title:'Pistons in Motion',category:'Build & Invent',description:'Step through a four-stroke engine and watch the piston move.',age:'Ages 9–15',icon:'⚙️',color:'#fff0d3',order:12}
   ];
   const trail=[
     {name:'Spark',icon:'⚡',id:'lighthouse',summary:'See what a complete circuit needs.',goal:'Notice the path from battery to bulb.'},
