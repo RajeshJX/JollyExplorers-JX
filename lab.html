@@ -23,7 +23,7 @@ body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 Nunito,"Trebuc
 .tabs button.on{background:var(--acc);border-color:var(--acc);color:#fff;box-shadow:0 4px #11867d}
 #grp button{font-size:13px;padding:12px 4px}
 .card{background:#fff;border:1px solid var(--line);border-radius:19px;padding:8px;box-shadow:var(--shadow)}
-canvas{width:100%;height:auto;display:block}
+canvas{width:100%;height:auto;max-height:78vh;object-fit:contain;display:block}
 .ctl{display:none;margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:17px;padding:8px 14px}
 .ctl.on{display:block}
 .row{display:flex;align-items:center;gap:10px;margin:8px 0;flex-wrap:wrap}
@@ -42,14 +42,22 @@ canvas{width:100%;height:auto;display:block}
 .ex h3{margin:0 0 6px;font-size:17px;color:var(--navy)}.ex p{margin:7px 0;font-size:14px}
 .ex .try{background:var(--yellow);color:#765b22;border-radius:12px;padding:9px 12px;margin-top:10px;font-weight:700}
 .foot{max-width:640px;margin:18px auto 0;padding:16px;border-top:1px solid var(--line);color:#83949b;font-size:11px;font-weight:800;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.stage{display:block}
+.more{display:none;margin:6px 0 0}.single .more{display:block}.more a{color:#148b84;font-size:12px;font-weight:900}
+.single #grp,.single #tabs{display:none}
+.single .intro{padding-bottom:6px}
+@media(min-width:700px){.w,.top,.foot{max-width:780px}.tabs button{flex:1 1 auto;min-width:90px;font-size:13px;padding:11px 12px}.intro h1{font-size:34px}}
+@media(min-width:1000px){.w,.top,.foot{max-width:1140px}.stage{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}.stage>.card{grid-column:1;grid-row:1/span 3;position:sticky;top:12px}.stage>.ctl,.stage>#info,.stage>.ex{grid-column:2;margin-top:0}}
+@media(pointer:coarse){.row input[type=range]{height:34px}.b{padding:12px 16px}}
+@media(max-width:380px){.intro h1{font-size:26px}.back{font-size:11px}.tabs button{font-size:11px}}
 .embed .top,.embed .intro,.embed .foot{display:none}.embed .w{padding-top:8px}
 </style></head><body>
 <header class="top"><a class="brand" href="./"><span class="mark">✦</span><span>JollyExplorers<small>JX · PLAY &amp; DISCOVER</small></span></a><a class="back" href="./#projects">← All adventures</a></header>
-<div class="w"><div class="intro"><p class="eyebrow">Mechanisms · Sensors · Circuits</p><h1>Explorer Lab</h1><p>Pick a group, then an activity, and see how things really work.</p></div>
+<div class="w"><div class="intro"><p class="eyebrow" id="ie">Mechanisms · Sensors · Circuits</p><h1 id="ih">Explorer Lab</h1><p id="ip">Pick a group, then an activity, and see how things really work.</p><p class="more"><a href="#" id="seeall">See all activities</a></p></div>
 <div class="row" style="margin:0 0 8px"><button class="b" id="snd" onclick="togSnd()">🔇 Sound off</button></div>
 <div class="tabs" id="grp"><button>⚙️ Mechanisms</button><button>📡 Sensors</button><button>🔌 Circuits</button></div>
 <div class="tabs" id="tabs"><button>Engine</button><button>Crank &amp; slider</button><button>Lock</button><button>Distance</button><button>Light</button><button>Heat</button><button>Avoid</button><button>Line</button><button>Door</button><button>Pump</button><button>Jack</button><button>Wiper</button><button>Soil</button><button>LED</button><button>Series</button><button>Night</button><button>Cap</button></div>
-<div class="card"><canvas id="cv"></canvas></div>
+<div class="stage"><div class="card"><canvas id="cv"></canvas></div>
 
 <div class="ctl" id="p0">
  <div class="chips" id="chips"><span>Intake</span><span>Compression</span><span>Power</span><span>Exhaust</span></div>
@@ -138,7 +146,7 @@ canvas{width:100%;height:auto;display:block}
  <div class="row"><label>Resistor kΩ</label><input type="range" id="rc16" min="1" max="100" value="20"></div>
  <div class="row"><label>Capacitor µF</label><input type="range" id="cc16" min="100" max="2000" value="470"></div>
 </div>
-<div id="info"></div><div class="ex" id="ex"></div>
+<div id="info"></div><div class="ex" id="ex"></div></div>
 </div>
 <footer class="foot"><span>✦ JollyExplorers JX</span><span>Make it. Try it. Learn something new.</span></footer>
 <script>
@@ -255,7 +263,7 @@ const exs=[
 <p>⏱️ <b>Timers and delays</b> use how long a capacitor takes to fill.</p>
 <p>🧸 <b>Fading LEDs</b> in toys glow softly as a capacitor empties.</p>
 <div class="try">🔎 <b>Try this:</b> Tap Charge, then Discharge and watch the LED fade. Now use a bigger capacitor. Does it last longer?</div>`];
-function show(n){tab=n;playing=true;try{history.replaceState(null,'','#'+IDS[n])}catch(e){}document.querySelectorAll('.pp').forEach(b=>b.textContent='Pause');[...$('tabs').children].forEach((b,i)=>b.classList.toggle('on',i==n));
+function show(n){tab=n;playing=true;intro(n);try{history.replaceState(null,'','#'+IDS[n])}catch(e){}document.querySelectorAll('.pp').forEach(b=>b.textContent='Pause');[...$('tabs').children].forEach((b,i)=>b.classList.toggle('on',i==n));
  for(let i=0;i<17;i++)$('p'+i).classList.toggle('on',i==n);[...$('tabs').children].forEach((b,i)=>b.style.display=GR[i]==GR[n]?'':'none');[...$('grp').children].forEach((b,i)=>b.classList.toggle('on',i==GR[n]));size(hs[n]);$('info').textContent=infos[n];$('ex').innerHTML=exs[n]}
 [...$('tabs').children].forEach((b,i)=>b.onclick=()=>show(i));
 function tp(){playing=!playing;document.querySelectorAll('.pp').forEach(b=>b.textContent=playing?'Pause':'Play')}
@@ -623,5 +631,9 @@ function drawLDR(dt){drawLDROld();const l=sv('l4'),on=l<sv('t4');lcd(100,12,108,
 const IDS=['engine','crank','lock','distance','light','heat','avoid','line','door','pump','jack','wiper','soil','led','series','night','cap'];
 if(window.self!==window.top)document.body.classList.add('embed');
 window.addEventListener('hashchange',()=>{const i=IDS.indexOf(location.hash.slice(1));if(i>=0&&i!==tab)show(i)});
-show(Math.max(0,IDS.indexOf(location.hash.slice(1))));requestAnimationFrame(frame);
+const NM=[["Four-Stroke Engine", "Build & Invent", "Watch a piston go suck, squeeze, bang, blow."], ["Crank & Slider", "Build & Invent", "Turn a crank and see spinning become back-and-forth motion."], ["Inside a Door Lock", "Build & Invent", "Slide in the key, line up the pins, and turn the lock."], ["Echo Distance Sensor", "Robotics & Circuits", "Send a sound ping and time the echo, like a parking sensor."], ["Light Sensor Lamp", "Robotics & Circuits", "Make a lamp switch on by itself when it gets dark."], ["Heat Sensor Fan", "Robotics & Circuits", "Watch a fan start and a buzzer sound when it gets hot."], ["Obstacle-Avoiding Robot", "Robotics & Circuits", "A robot sees blocks ahead and turns away before it bumps."], ["Line-Following Robot", "Robotics & Circuits", "Three eyes follow a track through corners and beep at checkpoints."], ["Motion Sensor Door", "Robotics & Circuits", "Walk up to an automatic door and see how it senses you."], ["Water Pump System", "Science Lab", "Pump water to a roof tank and let a float switch control it."], ["Hydraulic Jack", "Build & Invent", "Pump a small piston and lift a heavy car with oil."], ["Windshield Wiper", "Build & Invent", "See how a spinning motor swings a wiper to clear the rain."], ["Soil Moisture Alert", "Nature & Earth", "A sensor, a screen and a buzzer tell you when a plant is thirsty."], ["LED and Resistor", "Robotics & Circuits", "Find the safe amount of current for an LED."], ["Series vs Parallel", "Robotics & Circuits", "See why one bulb going out can switch off all the others."], ["Night-Light Circuit", "Robotics & Circuits", "Use a light sensor and a transistor to build an automatic night light."], ["Capacitor Flash", "Robotics & Circuits", "Charge a capacitor and watch an LED glow and fade."]];
+function intro(n){if(!document.body.classList.contains('single'))return;$('ie').textContent=NM[n][1];$('ih').textContent=NM[n][0];$('ip').textContent=NM[n][2]}
+$('seeall').onclick=e=>{e.preventDefault();document.body.classList.remove('single');$('ie').textContent='Mechanisms · Sensors · Circuits';$('ih').textContent='Explorer Lab';$('ip').textContent='Pick a group, then an activity, and see how things really work.'};
+const h0=IDS.indexOf(location.hash.slice(1));if(h0>=0)document.body.classList.add('single');
+show(Math.max(0,h0));requestAnimationFrame(frame);
 </script></body></html>
