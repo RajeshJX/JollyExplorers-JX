@@ -17,7 +17,10 @@ nav button{font:inherit;font-weight:700;font-size:13px;padding:8px 14px;border-r
 nav button.on{background:var(--accent);color:#1d1b16}
 .top a{font-size:12px;color:var(--muted);white-space:nowrap}
 iframe{flex:1;width:100%;border:0;background:var(--bg)}
-@media (max-width:640px){.top{flex-wrap:wrap}.top a{display:none}nav{flex-basis:100%}}
+@media (min-width:700px){nav button{font-size:14px;padding:9px 18px}.top{padding:12px 24px}.top h1{font-size:18px}}
+@media (max-width:1500px){.top{flex-wrap:wrap}nav{flex-basis:100%;flex-wrap:wrap}}
+@media (max-width:900px){.top a{display:none}}
+@media (max-width:640px){nav{flex-wrap:nowrap}}
 </style>
 </head>
 <body>
@@ -28,7 +31,10 @@ iframe{flex:1;width:100%;border:0;background:var(--bg)}
 var SIMS=[
   {id:"circuit",        title:"1 · Simple circuit",    file:"Simulators/circuit.html"},
   {id:"series-parallel",title:"2 · Series vs parallel",file:"Simulators/series-parallel.html"},
-  {id:"fuse-overload",   title:"3 · Fuse & overload",   file:"Simulators/fuse-overload.html"}
+  {id:"fuse-overload",   title:"3 · Fuse & overload",   file:"Simulators/fuse-overload.html"},
+  {id:"staircase-switch",title:"4 · Staircase switch",  file:"Simulators/staircase-switch.html"},
+  {id:"solar-power",     title:"5 · Solar power",       file:"Simulators/solar-power.html"},
+  {id:"electric-motor",  title:"6 · Electric motor",    file:"Simulators/electric-motor.html"}
 ];
 var nav=document.getElementById("nav"),frame=document.getElementById("frame"),full=document.getElementById("full");
 function open(id){

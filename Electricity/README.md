@@ -5,6 +5,9 @@ simulators/circuit.html          Simulator 1: simple circuit
 simulators/series-parallel.html  Simulator 2: series vs parallel
 
 simulators/fuse-overload.html    Simulator 3: fuse and overload
+simulators/staircase-switch.html Simulator 4: two-way (staircase) switches
+simulators/solar-power.html      Simulator 5: solar panel, battery and lamp
+simulators/electric-motor.html   Simulator 6: electric motor
 
 Each simulator is a standalone file. Edit or replace any one without touching the others.
 
