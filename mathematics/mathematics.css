@@ -90,3 +90,44 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
  html{scroll-behavior:auto}
  *,*::before,*::after{transition:none!important;animation:none!important}
 }
+
+/* Full 30-simulator catalogue */
+.catalogue-intro,.world-heading{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:30px 0 14px}
+.catalogue-intro h2,.world-heading h2{margin:4px 0;color:var(--navy);font-size:25px}
+.catalogue-intro p:not(.eyebrow),.world-heading p:not(.eyebrow){margin:0;color:var(--muted);font-size:13px}
+.world-nav{position:sticky;top:0;z-index:3;display:flex;gap:8px;overflow-x:auto;padding:10px 0;background:#fffaf0ee;scrollbar-width:thin}
+.world-nav a{flex:none;padding:9px 12px;border:1px solid #dce9e8;border-radius:22px;background:#fff;color:#31596a;text-decoration:none;font-size:11px;font-weight:900}
+.world-nav a:hover,.world-nav a:focus-visible{background:var(--teal);color:white}
+.world-section{scroll-margin-top:65px;margin:22px 0 34px}
+.world-heading{align-items:center}
+.world-heading .count-pill{white-space:nowrap}
+.world-section .sim-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.world-section .sim-card{display:flex;flex-direction:column;min-width:0}
+.world-section .art{height:105px;min-height:105px;font-size:48px}
+.world-section .card-body{display:flex;flex:1;flex-direction:column}
+.world-section .card-body p{flex:1;min-height:44px}
+.world-section .card-body button{width:100%;min-height:44px}
+.tool-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:15px 0}
+.control-label{display:flex;justify-content:space-between;gap:8px;align-items:center;color:var(--navy);font-size:12px;font-weight:900}
+.control-label strong{color:#138b82;font-size:14px}
+.sim-range{width:100%;accent-color:var(--teal);min-height:30px}
+.visual-panel{display:grid;place-items:center;min-height:125px;margin:14px 0;padding:15px;border-radius:16px;background:#dff4ff;overflow:hidden}
+.shape-visual{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:60px;color:var(--navy)}
+.shape-visual small{font-size:12px;font-weight:900}
+.bar-chart{display:flex;align-items:end;justify-content:center;gap:20px;width:min(100%,360px);height:130px;padding:8px 12px 0;border-bottom:2px solid #8ab6c3}
+.bar-column{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:end;height:100%;gap:4px}
+.bar-column strong,.bar-column small{font-size:11px;color:var(--navy);font-weight:900}
+.bar{width:min(45px,70%);min-height:5px;border-radius:9px 9px 0 0;background:var(--teal);transition:height .15s}
+.fraction-visual{display:grid;grid-template-columns:repeat(10,22px);gap:4px;max-width:100%}
+.fraction-visual span{width:22px;height:22px;border:1px solid #138b82;border-radius:5px;background:white}
+.fraction-visual span.filled{background:var(--coral);border-color:var(--coral)}
+.angle-visual{width:150px;height:100px;position:relative;border-bottom:3px solid #138b82}
+.angle-visual:before{content:"";position:absolute;left:50%;bottom:0;width:3px;height:80px;background:#138b82;transform-origin:bottom;transform:rotate(var(--angle))}
+.angle-visual:after{content:"";position:absolute;left:50%;bottom:0;width:70px;height:3px;background:#138b82}
+.probability-track{width:min(100%,360px);height:24px;border-radius:20px;background:#fff;overflow:hidden;border:1px solid #b8d9dc}
+.probability-track span{display:block;height:100%;border-radius:20px;background:var(--teal)}
+.result-panel{padding:14px;border:1px solid #d4e9e5;border-radius:14px;background:white}
+.result-panel strong{display:block;margin:5px 0;color:var(--navy);font-size:21px;overflow-wrap:anywhere}
+.result-panel p:last-child{margin:5px 0 0;color:#55717c;font-size:12px;line-height:1.5}
+@media(max-width:900px){.world-section .sim-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.catalogue-intro,.world-heading{align-items:flex-start;flex-wrap:wrap}.catalogue-intro h2,.world-heading h2{font-size:21px}.world-section .sim-grid{grid-template-columns:1fr}.world-section .sim-card{display:grid;grid-template-columns:88px minmax(0,1fr);flex-direction:initial}.world-section .art{height:100%;min-height:145px}.world-section .card-body p{min-height:0}.world-section .card-body button{width:100%}.tool-controls{grid-template-columns:1fr}.world-nav{margin:0 -4px;padding:9px 4px}.world-nav a{font-size:10px}.fraction-visual{grid-template-columns:repeat(8,19px)}.fraction-visual span{width:19px;height:19px}}
