@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Electric Motor</title>
+<style>
+:root{--bg:#f6efde;--ink:#1d1b16;--muted:#6b6455;--card:#fffaf0;--accent:#f2b400;--line:#e3d8bd;--chip:#efe5cb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17150f;--ink:#f3ecd9;--muted:#a79f8a;--card:#221f16;--accent:#ffc83d;--line:#2d2a1e;--chip:#2e2a1c}}
+:root[data-theme="dark"]{--bg:#17150f;--ink:#f3ecd9;--muted:#a79f8a;--card:#221f16;--accent:#ffc83d;--line:#2d2a1e;--chip:#2e2a1c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{padding:16px 18px 0}
+h1{margin:0;font-size:18px;letter-spacing:.1em;text-transform:uppercase}
+header p{margin:2px 0 0;font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+#stage{overflow:hidden;flex:1;min-height:300px;position:relative;touch-action:none;cursor:grab;
+background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:28px 28px}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#hint{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted);pointer-events:none}
+.panel{margin:0 12px 12px;padding:12px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);border-radius:12px;overflow:hidden}
+.seg button{font:inherit;font-weight:700;font-size:15px;padding:12px;border:0;background:var(--card);color:var(--ink);cursor:pointer}
+.seg button.on{background:var(--accent);color:#1d1b16}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.slots button{font:inherit;font-weight:700;font-size:13px;padding:10px 4px;border-radius:10px;border:1.5px solid var(--ink);background:var(--chip);color:var(--ink);cursor:pointer}
+.slots button.off{opacity:.45;border-style:dashed}
+.stats{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.stats span{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--chip);border:1.5px solid var(--line)}
+#cap{margin:10px 2px 0;font-size:13.5px;line-height:1.5}
+small{display:block;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:10px 0 0}
+@media (min-width:700px){.panel{width:calc(100% - 24px);max-width:760px;margin-left:auto;margin-right:auto;font-size:15px}.main,.seg button{font-size:17px}.slots button{font-size:15px;padding:14px 6px}.stats span{font-size:13px}#cap{font-size:15px}h1{font-size:22px}}
+@media (min-width:1000px),(min-width:700px) and (orientation:landscape){body{height:100vh;display:grid;grid-template-columns:minmax(0,1fr) clamp(340px,32vw,440px);grid-template-rows:auto minmax(0,1fr);overflow:hidden}header{grid-column:1/-1;padding:18px 24px 6px}#stage{min-height:0}.panel{width:auto;max-width:none;margin:12px 20px 20px 0;align-self:center;max-height:calc(100% - 32px);overflow:auto;padding:18px}}
+
+.gauge{height:16px;border-radius:99px;background:var(--chip);border:1.5px solid var(--line);position:relative;overflow:hidden;margin-top:10px}
+#fill{height:100%;width:0;background:#4caf50;transition:width .25s,background .25s}
+#mark{position:absolute;top:0;bottom:0;width:3px;background:var(--ink)}
+.main{font:inherit;font-weight:700;width:100%;padding:12px;margin-top:10px;border-radius:12px;border:2px solid var(--ink);background:var(--accent);color:#1d1b16;cursor:pointer;font-size:15px}
+.main:disabled{opacity:.35}
+.embedded header h1{display:none}
+input[type=range]{width:100%;accent-color:var(--accent);margin:6px 0 0}
+.lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.row button{font:inherit;font-weight:700;font-size:14px;padding:12px 6px;border-radius:12px;border:2px solid var(--ink);background:var(--chip);color:var(--ink);cursor:pointer}.row button.on{background:var(--accent);color:#1d1b16}
+</style>
+</head>
+<body>
+<script>if(self!==top)document.documentElement.classList.add("embedded")</script>
+<header><h1>How It’s Wired</h1><p>Simulator 6 · The electric motor</p></header>
+<div id="stage"><div id="hint">Drag to rotate</div></div>
+<div class="panel">
+<button class="main" id="sw">Switch ON</button>
+<div class="lbl"><span>Battery cells</span></div>
+<div class="seg" style="grid-template-columns:repeat(3,1fr)"><button id="c1" class="on">1 cell</button><button id="c2">2 cells</button><button id="c3">3 cells</button></div>
+<div class="lbl"><span>Coil turns</span></div>
+<div class="seg" style="grid-template-columns:repeat(3,1fr)"><button id="t1" class="on">10</button><button id="t2">20</button><button id="t3">30</button></div>
+<div class="row" style="grid-template-columns:1fr"><button id="rv">Reverse battery ⇄</button></div>
+<div class="stats"><span id="a"></span><span id="b"></span></div>
+<p id="cap"></p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var stage=$('stage');
+var scene=new THREE.Scene();
+var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+stage.appendChild(renderer.domElement);
+var cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,100);
+cam.position.set(9,8,9);cam.lookAt(0,0.5,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0xb8a97c,0.85));
+var sun=new THREE.DirectionalLight(0xffffff,0.6);sun.position.set(5,10,4);scene.add(sun);
+var g=new THREE.Group();scene.add(g);
+var EDGE=new THREE.LineBasicMaterial({color:0x2a2418});
+function mat(c,o){return new THREE.MeshLambertMaterial(Object.assign({color:c},o||{}))}
+function add(m,x,y,z,p){m.position.set(x,y,z);m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry,40),EDGE));(p||g).add(m);return m}
+function box(w,h,d,c,x,y,z,p){return add(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c)),x,y,z,p)}
+function cyl(r,h,c,x,y,z,p){return add(new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,24),mat(c)),x,y,z,p)}
+var Y=0.35,CU=0xd9822b;
+var sh=new THREE.Mesh(new THREE.PlaneGeometry(10.5,7.8),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:0.12}));
+sh.rotation.x=-Math.PI/2;sh.position.set(0.3,-0.34,0.3);g.add(sh);
+box(9.2,0.25,6.6,0xcdbb8a,0,-0.2,0);box(8.8,0.12,6.2,0xe6d9b0,0,-0.02,0);
+function wire(x1,z1,x2,z2,p){
+  box(Math.abs(x2-x1)||0.16,0.16,Math.abs(z2-z1)||0.16,CU,(x1+x2)/2,Y,(z1+z2)/2,p);
+  [[x1,z1],[x2,z2]].forEach(function(c){var s=new THREE.Mesh(new THREE.SphereGeometry(0.15,14,10),mat(CU));s.position.set(c[0],Y,c[1]);(p||g).add(s)});
+}
+function mkLoop(pts){var segs=[],t=0;for(var i=0;i<pts.length;i++){var a=pts[i],b=pts[(i+1)%pts.length],l=Math.hypot(b[0]-a[0],b[1]-a[1]);segs.push([a,b,l]);t+=l}return{segs:segs,total:t}}
+function onLoop(lp,t){var s=(((t%1)+1)%1)*lp.total;
+  for(var i=0;i<lp.segs.length;i++){var sg=lp.segs[i];if(s<=sg[2]){var f=s/sg[2];return[sg[0][0]+(sg[1][0]-sg[0][0])*f,sg[0][1]+(sg[1][1]-sg[0][1])*f]}s-=sg[2]}return lp.segs[0][0]}
+function mkDots(n){var a=[];for(var k=0;k<n;k++){var d=new THREE.Mesh(new THREE.SphereGeometry(0.11,10,8),new THREE.MeshBasicMaterial({color:0xfff0a0}));d.userData.t=k/n;d.visible=false;g.add(d);a.push(d)}return a}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+var drag=false,lx=0;
+stage.addEventListener('pointerdown',function(e){drag=true;lx=e.clientX;stage.style.cursor='grabbing'});
+addEventListener('pointerup',function(){drag=false;stage.style.cursor='grab'});
+addEventListener('pointermove',function(e){if(drag){g.rotation.y+=(e.clientX-lx)*0.01;lx=e.clientX}});
+function resize(){var w=stage.clientWidth,h=stage.clientHeight,asp=w/h,s=Math.max(4.9,6.0/asp);if(!w||!h)return;renderer.setSize(w,h,false);
+  cam.left=-s*asp;cam.right=s*asp;cam.top=s;cam.bottom=-s;cam.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();if(window.ResizeObserver)new ResizeObserver(resize).observe(stage);
+function bulbParts(x,z){
+  cyl(0.42,0.5,0x7a7a7a,x,0.45,z);cyl(0.3,0.2,0xb9b9b9,x,0.8,z);
+  var bm=mat(0xcfd8dc,{emissive:0,transparent:true,opacity:0.95});
+  var b=new THREE.Mesh(new THREE.SphereGeometry(0.66,26,18),bm);b.position.set(x,1.5,z);g.add(b);
+  var l=new THREE.PointLight(0xffc83d,0,8);l.position.set(x,1.7,z);g.add(l);
+  return{m:bm,l:l,set:function(e){bm.emissive.setRGB(e,e*0.78,e*0.24);l.intensity=1.8*e}};
+}
+function battery(x,z,p){box(1.1,1.0,1.8,0x34363b,x,0.5,z,p);box(1.1,0.3,1.8,0x57b560,x,1.15,z,p);box(1.1,0.1,1.8,0xffd34e,x,0.78,z,p);cyl(0.2,0.22,0xcfcfcf,x,1.41,z,p)}
+var D=2.4,on=false,cells=1,turns=1,dir=1,ang=0,w=0,bat=0,TF=[1,1.6,2.2];
+function label(txt,x,y,z){var c=document.createElement('canvas');c.width=c.height=64;var q=c.getContext('2d');q.fillStyle='#2a2418';q.font='bold 46px sans-serif';q.textAlign='center';q.textBaseline='middle';q.fillText(txt,32,34);
+  var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true}));sp.scale.set(0.9,0.9,1);sp.position.set(x,y,z);g.add(sp)}
+wire(-3.6,D,-3.6,-D);wire(-3.6,D,0,D);wire(0,D,0,1.2);wire(-3.6,-D,0,-D);wire(0,-D,0,-1.2);
+box(1.0,0.85,1.8,0x8a8a8a,-1.7,0.425,0);box(1.0,0.85,1.8,0x8a8a8a,1.7,0.425,0);
+box(0.8,1.1,1.5,0xd64533,-1.7,1.4,0);box(0.8,1.1,1.5,0x3a73d6,1.7,1.4,0);label('N',-1.7,2.3,0);label('S',1.7,2.3,0);
+box(0.3,1.4,0.3,0x888888,0,0.7,1.2);box(0.3,1.4,0.3,0x888888,0,0.7,-1.2);
+var ax=cyl(0.08,2.8,0xcfcfcf,0,1.4,0);ax.rotation.x=Math.PI/2;
+var rotor=new THREE.Group();rotor.position.set(0,1.4,0);g.add(rotor);
+var coil=new THREE.Group();rotor.add(coil);
+function buildCoil(){
+  while(coil.children.length)coil.remove(coil.children[0]);
+  for(var k=0;k<turns;k++){var y=(k-(turns-1)/2)*0.15;
+    [-0.6,0.6].forEach(function(x){box(0.08,0.08,1.8,0xd9822b,x,y,0,coil)});
+    [-0.9,0.9].forEach(function(z){box(1.28,0.08,0.08,0xd9822b,0,y,z,coil)});}
+  var m1=new THREE.Mesh(new THREE.SphereGeometry(0.14,12,10),mat(0xffffff));m1.position.set(0.6,0,0);coil.add(m1);
+  var m2=new THREE.Mesh(new THREE.SphereGeometry(0.14,12,10),mat(0x222222));m2.position.set(-0.6,0,0);coil.add(m2);
+}
+var bg=new THREE.Group();bg.position.set(-3.6,0,0);g.add(bg);
+function buildBat(){
+  while(bg.children.length)bg.remove(bg.children[0]);
+  for(var i=0;i<cells;i++){var z=(i-(cells-1)/2)*0.62;box(1.0,1.0,0.56,i%2?0x34363b:0x57b560,0,0.5,z,bg)}
+  cyl(0.2,0.22,0xcfcfcf,0,0.5,(cells*0.62)/2+0.05,bg).rotation.x=Math.PI/2;
+}
+var loop=mkLoop([[-3.6,D],[0,D],[0,1.2],[0,-1.2],[0,-D],[-3.6,-D]]);
+var dots=mkDots(36);
+function ui(){
+  $('sw').textContent=on?'Switch OFF':'Switch ON';
+  [1,2,3].forEach(function(i){$('c'+i).className=cells===i?'on':'';$('t'+i).className=turns===i?'on':''});
+  $('b').textContent='Spins '+(dir>0?'anticlockwise':'clockwise')+' (front view)';
+  $('cap').textContent=!on?'Switch on the battery. Current flows through the coil, and the coil sits between two magnets.'
+   :'Current in the coil makes it a magnet that is pushed and pulled by the real magnets, so it spins. More cells push more current, and more turns make a stronger coil, so both make it spin faster. Reverse the battery and it spins the other way.';
+  buildCoil();buildBat();
+}
+$('sw').onclick=function(){on=!on;ui()};
+[1,2,3].forEach(function(i){$('c'+i).onclick=function(){cells=i;ui()};$('t'+i).onclick=function(){turns=i;ui()}});
+$('rv').onclick=function(){dir=-dir;ui()};ui();
+function update(dt){
+  var target=on?dir*cells*TF[turns-1]*2.0:0;
+  w+=(target-w)*Math.min(1,dt*2.2);ang+=w*dt;rotor.rotation.z=ang;
+  bat+=((dir>0?0:Math.PI)-bat)*Math.min(1,dt*8);bg.rotation.y=bat;
+  $('a').textContent='Speed: '+Math.round(Math.abs(w)*9.55)+' rpm';
+  dots.forEach(function(d){d.visible=on;if(on){d.userData.t=(d.userData.t+dir*dt*0.25*cells/ (loop.total/6))%1;var p=onLoop(loop,d.userData.t);d.position.set(p[0],Y+0.22,p[1])}});
+}
+var clock=new THREE.Clock();
+(function loop(){var dt=Math.min(clock.getDelta(),0.1),t=clock.elapsedTime;update(dt,t);g.position.y=Math.sin(t*1.2)*0.04;renderer.render(scene,cam);requestAnimationFrame(loop)})();
+})();
+</script>
+</body>
+</html>

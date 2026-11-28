@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Solar Power</title>
+<style>
+:root{--bg:#f6efde;--ink:#1d1b16;--muted:#6b6455;--card:#fffaf0;--accent:#f2b400;--line:#e3d8bd;--chip:#efe5cb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17150f;--ink:#f3ecd9;--muted:#a79f8a;--card:#221f16;--accent:#ffc83d;--line:#2d2a1e;--chip:#2e2a1c}}
+:root[data-theme="dark"]{--bg:#17150f;--ink:#f3ecd9;--muted:#a79f8a;--card:#221f16;--accent:#ffc83d;--line:#2d2a1e;--chip:#2e2a1c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{padding:16px 18px 0}
+h1{margin:0;font-size:18px;letter-spacing:.1em;text-transform:uppercase}
+header p{margin:2px 0 0;font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+#stage{overflow:hidden;flex:1;min-height:300px;position:relative;touch-action:none;cursor:grab;
+background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:28px 28px}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#hint{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted);pointer-events:none}
+.panel{margin:0 12px 12px;padding:12px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);border-radius:12px;overflow:hidden}
+.seg button{font:inherit;font-weight:700;font-size:15px;padding:12px;border:0;background:var(--card);color:var(--ink);cursor:pointer}
+.seg button.on{background:var(--accent);color:#1d1b16}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.slots button{font:inherit;font-weight:700;font-size:13px;padding:10px 4px;border-radius:10px;border:1.5px solid var(--ink);background:var(--chip);color:var(--ink);cursor:pointer}
+.slots button.off{opacity:.45;border-style:dashed}
+.stats{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.stats span{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--chip);border:1.5px solid var(--line)}
+#cap{margin:10px 2px 0;font-size:13.5px;line-height:1.5}
+small{display:block;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:10px 0 0}
+@media (min-width:700px){.panel{width:calc(100% - 24px);max-width:760px;margin-left:auto;margin-right:auto;font-size:15px}.main,.seg button{font-size:17px}.slots button{font-size:15px;padding:14px 6px}.stats span{font-size:13px}#cap{font-size:15px}h1{font-size:22px}}
+@media (min-width:1000px),(min-width:700px) and (orientation:landscape){body{height:100vh;display:grid;grid-template-columns:minmax(0,1fr) clamp(340px,32vw,440px);grid-template-rows:auto minmax(0,1fr);overflow:hidden}header{grid-column:1/-1;padding:18px 24px 6px}#stage{min-height:0}.panel{width:auto;max-width:none;margin:12px 20px 20px 0;align-self:center;max-height:calc(100% - 32px);overflow:auto;padding:18px}}
+
+.gauge{height:16px;border-radius:99px;background:var(--chip);border:1.5px solid var(--line);position:relative;overflow:hidden;margin-top:10px}
+#fill{height:100%;width:0;background:#4caf50;transition:width .25s,background .25s}
+#mark{position:absolute;top:0;bottom:0;width:3px;background:var(--ink)}
+.main{font:inherit;font-weight:700;width:100%;padding:12px;margin-top:10px;border-radius:12px;border:2px solid var(--ink);background:var(--accent);color:#1d1b16;cursor:pointer;font-size:15px}
+.main:disabled{opacity:.35}
+.embedded header h1{display:none}
+input[type=range]{width:100%;accent-color:var(--accent);margin:6px 0 0}
+.lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.row button{font:inherit;font-weight:700;font-size:14px;padding:12px 6px;border-radius:12px;border:2px solid var(--ink);background:var(--chip);color:var(--ink);cursor:pointer}.row button.on{background:var(--accent);color:#1d1b16}
+</style>
+</head>
+<body>
+<script>if(self!==top)document.documentElement.classList.add("embedded")</script>
+<header><h1>How It’s Wired</h1><p>Simulator 5 · Solar power</p></header>
+<div id="stage"><div id="hint">Drag to rotate</div></div>
+<div class="panel">
+<div class="lbl"><span>Sunshine</span><span id="sv"></span></div>
+<input type="range" id="sun" min="0" max="100" value="70">
+<div class="row"><button id="lamp" class="on">Lamp ON</button><button id="day">Run a day ☀️→🌙</button></div>
+<div class="gauge"><div id="fill"></div></div>
+<div class="stats"><span id="a"></span><span id="b"></span><span id="c"></span></div>
+<p id="cap"></p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var stage=$('stage');
+var scene=new THREE.Scene();
+var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+stage.appendChild(renderer.domElement);
+var cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,100);
+cam.position.set(9,8,9);cam.lookAt(0,0.5,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0xb8a97c,0.85));
+var sun=new THREE.DirectionalLight(0xffffff,0.6);sun.position.set(5,10,4);scene.add(sun);
+var g=new THREE.Group();scene.add(g);
+var EDGE=new THREE.LineBasicMaterial({color:0x2a2418});
+function mat(c,o){return new THREE.MeshLambertMaterial(Object.assign({color:c},o||{}))}
+function add(m,x,y,z,p){m.position.set(x,y,z);m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry,40),EDGE));(p||g).add(m);return m}
+function box(w,h,d,c,x,y,z,p){return add(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c)),x,y,z,p)}
+function cyl(r,h,c,x,y,z,p){return add(new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,24),mat(c)),x,y,z,p)}
+var Y=0.35,CU=0xd9822b;
+var sh=new THREE.Mesh(new THREE.PlaneGeometry(10.5,7.8),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:0.12}));
+sh.rotation.x=-Math.PI/2;sh.position.set(0.3,-0.34,0.3);g.add(sh);
+box(9.2,0.25,6.6,0xcdbb8a,0,-0.2,0);box(8.8,0.12,6.2,0xe6d9b0,0,-0.02,0);
+function wire(x1,z1,x2,z2,p){
+  box(Math.abs(x2-x1)||0.16,0.16,Math.abs(z2-z1)||0.16,CU,(x1+x2)/2,Y,(z1+z2)/2,p);
+  [[x1,z1],[x2,z2]].forEach(function(c){var s=new THREE.Mesh(new THREE.SphereGeometry(0.15,14,10),mat(CU));s.position.set(c[0],Y,c[1]);(p||g).add(s)});
+}
+function mkLoop(pts){var segs=[],t=0;for(var i=0;i<pts.length;i++){var a=pts[i],b=pts[(i+1)%pts.length],l=Math.hypot(b[0]-a[0],b[1]-a[1]);segs.push([a,b,l]);t+=l}return{segs:segs,total:t}}
+function onLoop(lp,t){var s=(((t%1)+1)%1)*lp.total;
+  for(var i=0;i<lp.segs.length;i++){var sg=lp.segs[i];if(s<=sg[2]){var f=s/sg[2];return[sg[0][0]+(sg[1][0]-sg[0][0])*f,sg[0][1]+(sg[1][1]-sg[0][1])*f]}s-=sg[2]}return lp.segs[0][0]}
+function mkDots(n){var a=[];for(var k=0;k<n;k++){var d=new THREE.Mesh(new THREE.SphereGeometry(0.11,10,8),new THREE.MeshBasicMaterial({color:0xfff0a0}));d.userData.t=k/n;d.visible=false;g.add(d);a.push(d)}return a}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+var drag=false,lx=0;
+stage.addEventListener('pointerdown',function(e){drag=true;lx=e.clientX;stage.style.cursor='grabbing'});
+addEventListener('pointerup',function(){drag=false;stage.style.cursor='grab'});
+addEventListener('pointermove',function(e){if(drag){g.rotation.y+=(e.clientX-lx)*0.01;lx=e.clientX}});
+function resize(){var w=stage.clientWidth,h=stage.clientHeight,asp=w/h,s=Math.max(4.9,6.0/asp);if(!w||!h)return;renderer.setSize(w,h,false);
+  cam.left=-s*asp;cam.right=s*asp;cam.top=s;cam.bottom=-s;cam.updateProjectionMatrix()}
+addEventListener('resize',resize);resize();if(window.ResizeObserver)new ResizeObserver(resize).observe(stage);
+function bulbParts(x,z){
+  cyl(0.42,0.5,0x7a7a7a,x,0.45,z);cyl(0.3,0.2,0xb9b9b9,x,0.8,z);
+  var bm=mat(0xcfd8dc,{emissive:0,transparent:true,opacity:0.95});
+  var b=new THREE.Mesh(new THREE.SphereGeometry(0.66,26,18),bm);b.position.set(x,1.5,z);g.add(b);
+  var l=new THREE.PointLight(0xffc83d,0,8);l.position.set(x,1.7,z);g.add(l);
+  return{m:bm,l:l,set:function(e){bm.emissive.setRGB(e,e*0.78,e*0.24);l.intensity=1.8*e}};
+}
+function battery(x,z,p){box(1.1,1.0,1.8,0x34363b,x,0.5,z,p);box(1.1,0.3,1.8,0x57b560,x,1.15,z,p);box(1.1,0.1,1.8,0xffd34e,x,0.78,z,p);cyl(0.2,0.22,0xcfcfcf,x,1.41,z,p)}
+var s=0.7,lampOn=true,ch=0.4,cycle=false,phase=1.0,e=0,sunPos=new THREE.Vector3(-3.3,3.3,-1.2),panPos=new THREE.Vector3(-3.3,1.25,0.2);
+wire(-2.1,0,-0.7,0);wire(0.7,0,3.4,0);
+box(0.3,0.9,0.3,0x777777,-3.3,0.45,0.2);
+var pg=new THREE.Group();pg.position.set(-3.3,1.1,0.2);pg.rotation.x=-0.5;g.add(pg);
+var pm=mat(0x1f3b8a,{emissive:0});var pb=new THREE.Mesh(new THREE.BoxGeometry(2.3,0.12,1.9),pm);add(pb,0,0,0,pg);
+[-0.58,0,0.58].forEach(function(x){box(0.03,0.02,1.9,0x8fb3ff,x,0.07,0,pg)});[-0.3,0.3].forEach(function(z){box(2.3,0.02,0.03,0x8fb3ff,0,0.07,z,pg)});
+box(1.2,1.5,1.2,0x34363b,0,0.75,0);cyl(0.2,0.22,0xcfcfcf,0,1.6,0);
+var bars=[];for(var i=0;i<5;i++){var bm=mat(0x2a2a2a,{emissive:0});var b=new THREE.Mesh(new THREE.BoxGeometry(0.8,0.18,0.06),bm);b.position.set(0,0.28+i*0.26,0.62);g.add(b);bars.push(bm)}
+cyl(0.35,0.5,0x7a7a7a,3.4,0.45,0);cyl(0.28,0.2,0xb9b9b9,3.4,0.8,0);
+var bm2=mat(0xcfd8dc,{emissive:0,transparent:true,opacity:0.95});var bulb=new THREE.Mesh(new THREE.SphereGeometry(0.66,26,18),bm2);bulb.position.set(3.4,1.5,0);g.add(bulb);
+var lamp=new THREE.PointLight(0xffc83d,0,8);lamp.position.set(3.4,1.7,0);g.add(lamp);
+var sm=new THREE.MeshBasicMaterial({color:0xffd34e});var sunM=new THREE.Mesh(new THREE.SphereGeometry(0.6,24,18),sm);sunM.position.copy(sunPos);g.add(sunM);
+var hm=new THREE.MeshBasicMaterial({color:0xffd34e,transparent:true,opacity:0.3,depthWrite:false});var halo=new THREE.Mesh(new THREE.SphereGeometry(1.0,20,14),hm);halo.position.copy(sunPos);g.add(halo);
+var ph=[];for(var k=0;k<10;k++){var p=new THREE.Mesh(new THREE.SphereGeometry(0.09,8,6),new THREE.MeshBasicMaterial({color:0xffe27a}));p.userData.t=k/10;g.add(p);ph.push(p)}
+var d1=mkDots(12),d2=mkDots(12);
+function ui(){$('lamp').className=lampOn?'on':'';$('lamp').textContent='Lamp '+(lampOn?'ON':'OFF');$('day').className=cycle?'on':''}
+$('sun').oninput=function(){s=this.value/100;cycle=false;ui()};
+$('lamp').onclick=function(){lampOn=!lampOn;ui()};
+$('day').onclick=function(){cycle=!cycle;ui()};ui();
+var last='';
+function update(dt){
+  if(cycle){phase+=dt*0.4;s=Math.max(0,Math.sin(phase));$('sun').value=Math.round(s*100)}
+  var gen=6*s,load=lampOn?5:0;
+  ch=clamp(ch+(gen-load)*dt*0.02,0,1);
+  var lf=!lampOn?0:((ch>0.002||gen>=load)?1:gen/load);
+  e+=(lf-e)*Math.min(1,dt*6);bm2.emissive.setRGB(e,e*0.78,e*0.24);lamp.intensity=1.8*e;
+  sunM.scale.setScalar(0.6+0.5*s);sm.color.setRGB(1,0.55+0.3*s,0.15+0.2*s);hm.opacity=0.35*s;
+  pm.emissive.setRGB(0.1*s,0.2*s,0.5*s);
+  var n=Math.ceil(ch*5-1e-6);bars.forEach(function(m,i){m.color.setHex(i<n?(ch<0.25?0xe0452f:0x57d36a):0x2a2a2a);m.emissive.setHex(i<n?(ch<0.25?0x401008:0x143a1a):0)});
+  ph.forEach(function(p,k){p.visible=k/10<s;p.userData.t=(p.userData.t+dt*0.6)%1;p.position.lerpVectors(sunPos,panPos,p.userData.t)});
+  d1.forEach(function(d){d.visible=gen>0.15;d.userData.t=(d.userData.t+dt*0.5)%1;d.position.set(-2.1+1.4*d.userData.t,Y+0.22,0)});
+  d2.forEach(function(d){d.visible=lf>0.02;d.userData.t=(d.userData.t+dt*0.5)%1;d.position.set(0.7+2.7*d.userData.t,Y+0.22,0)});
+  var txt=[Math.round(s*100)+'%','Solar power: '+gen.toFixed(1)+' W','Lamp: '+(lampOn?5:0)+' W','Battery: '+Math.round(ch*100)+'%'].join('|');
+  if(txt!==last){last=txt;$('sv').textContent=Math.round(s*100)+'%';$('a').textContent='Solar power: '+gen.toFixed(1)+' W';$('b').textContent='Lamp uses: '+load+' W';$('c').textContent='Battery: '+Math.round(ch*100)+'%';
+    $('fill').style.width=ch*100+'%';$('fill').style.background=ch<0.25?'#e0452f':'#4caf50';
+    $('cap').textContent=s<0.05?(lampOn&&ch>0.002?'It is night, so the panel makes no power. The lamp runs from the battery until it is empty.':'It is night and the battery is empty, so the lamp is off.')
+      :gen>load?'The panel makes more power than the lamp needs. The extra charges the battery.'
+      :gen>0?'The panel makes less power than the lamp uses, so the battery is giving the rest and slowly draining.':'';}
+}
+var clock=new THREE.Clock();
+(function loop(){var dt=Math.min(clock.getDelta(),0.1),t=clock.elapsedTime;update(dt,t);g.position.y=Math.sin(t*1.2)*0.04;renderer.render(scene,cam);requestAnimationFrame(loop)})();
+})();
+</script>
+</body>
+</html>
