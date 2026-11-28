@@ -4,22 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#fffaf0">
+<meta name="description" content="Explore 30 playful, interactive maths simulators for children aged 5 to 14.">
 <title>Mathematics World | JollyExplorers</title>
-<link rel="stylesheet" href="mathematics.css">
-<script defer src="mathematics.js"></script>
+<link rel="stylesheet" href="mathematics.css?v=30sim1">
+<script defer src="mathematics.js?v=30sim1"></script>
 </head>
 <body>
 <header class="topbar"><a class="brand" href="../index.html"><span class="brand-mark">✦</span><span>JollyExplorers<small>MATHEMATICS WORLD</small></span></a><a class="back-link" href="../index.html">← Main JollyExplorers</a></header>
 <main class="wrap">
-<section class="hero"><div><p class="eyebrow">Count · discover · solve</p><h1>Welcome to<br><span>Mathematics World!</span></h1><p>Play with numbers, spot patterns and discover how maths helps us every day.</p><div class="hero-chips"><span>🎯 Learn</span><span>🧪 Experiment</span><span>🏆 Challenge</span><span>🏡 Real-life</span></div></div><div class="hero-art" aria-hidden="true">🔢<span>➕</span><span>📐</span><span>✨</span></div></section>
+<section class="hero"><div><p class="eyebrow">Count · discover · solve</p><h1>Welcome to<br><span>Mathematics World!</span></h1><p>30 playful simulators. 10 exciting worlds. Discover how maths works by trying it yourself.</p><div class="hero-chips"><span>🎯 Learn</span><span>🧪 Experiment</span><span>🏆 Challenge</span><span>🏡 Real-life</span></div></div><div class="hero-art" aria-hidden="true">🔢<span>➕</span><span>📐</span><span>✨</span></div></section>
 <section class="controls"><div><label for="age">Choose your explorer level</label><select id="age"><option value="young">Explorer · Ages 5–7</option><option value="builder" selected>Builder · Ages 8–10</option><option value="inventor">Inventor · Ages 11–14</option></select></div><div><label for="mode">Choose your activity mode</label><select id="mode"><option value="learn">Learn</option><option value="experiment">Experiment</option><option value="challenge">Challenge</option><option value="real">Real-life</option></select></div></section>
-<section class="section-head"><div><p class="eyebrow">Your first adventures</p><h2>Number World</h2><p>Three hands-on activities to get started.</p></div><span class="count-pill">MAT-001 to MAT-003</span></section>
-<section class="sim-grid">
-<article class="sim-card"><div class="art art-one">🍎<span>🍊</span><span>🍓</span></div><div class="card-body"><span class="project-id">MAT-001</span><h3>Number Explorer</h3><p>Count objects, add them together and take some away.</p><button data-open="number">Start exploring →</button></div></article>
-<article class="sim-card"><div class="art art-two">🚀<span>➜</span><span>⭐</span></div><div class="card-body"><span class="project-id">MAT-002</span><h3>Number Line Adventure</h3><p>Move forward and backward with number jumps.</p><button data-open="line">Start exploring →</button></div></article>
-<article class="sim-card"><div class="art art-three">🧱<span>🔟</span><span>💯</span></div><div class="card-body"><span class="project-id">MAT-003</span><h3>Place Value Builder</h3><p>Build numbers with ones, tens, hundreds and thousands.</p><button data-open="place">Start exploring →</button></div></article>
-</section>
-<section class="coming"><h2>More maths adventures are on the way!</h2><p>Our plan is 3 simulators in each of 10 sections — 30 first-phase activities in total.</p><div class="section-tags"><span>Geometry</span><span>Area & Measurement</span><span>3D Shapes & Volume</span><span>Fractions & Ratios</span><span>Algebra</span><span>Patterns & Logic</span><span>Challenges</span><span>Statistics & Probability</span><span>Practical Maths</span></div></section>
+<section class="catalogue-intro"><div><p class="eyebrow">Choose a world</p><h2>30 adventures to explore</h2><p>Open any activity, change the values and see maths come alive.</p></div><span class="count-pill">30 SIMULATORS</span></section>
+<nav class="world-nav" id="world-nav" aria-label="Mathematics sections"></nav>
+<div id="catalogue"></div>
 </main>
 <div class="modal" id="modal" hidden><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title"><div class="dialog-head"><div><p class="eyebrow" id="dialog-id">MAT-001</p><h2 id="dialog-title">Activity</h2></div><button class="close" id="close" aria-label="Close">×</button></div><div id="activity"></div></section></div>
 <footer>✦ JollyExplorers JX · Make it. Try it. Learn something new.</footer>
