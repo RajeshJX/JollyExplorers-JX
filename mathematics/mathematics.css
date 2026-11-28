@@ -131,3 +131,25 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
 .result-panel p:last-child{margin:5px 0 0;color:#55717c;font-size:12px;line-height:1.5}
 @media(max-width:900px){.world-section .sim-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.catalogue-intro,.world-heading{align-items:flex-start;flex-wrap:wrap}.catalogue-intro h2,.world-heading h2{font-size:21px}.world-section .sim-grid{grid-template-columns:1fr}.world-section .sim-card{display:grid;grid-template-columns:88px minmax(0,1fr);flex-direction:initial}.world-section .art{height:100%;min-height:145px}.world-section .card-body p{min-height:0}.world-section .card-body button{width:100%}.tool-controls{grid-template-columns:1fr}.world-nav{margin:0 -4px;padding:9px 4px}.world-nav a{font-size:10px}.fraction-visual{grid-template-columns:repeat(8,19px)}.fraction-visual span{width:19px;height:19px}}
+
+/* Practical geometry and 3D model views */
+.geometry-svg{display:block;width:min(100%,320px);height:190px;overflow:visible}
+.grid-measure{display:grid;grid-template-columns:repeat(var(--cols),minmax(12px,24px));grid-template-rows:repeat(var(--rows),minmax(12px,24px));gap:2px;max-width:100%;overflow:auto;padding:5px}
+.grid-measure span{background:#91d9ca;border:1px solid #188f83;border-radius:2px;aspect-ratio:1}
+.shape-caption{margin:3px 0 0;text-align:center;color:#31596a;font-size:12px;font-weight:900}
+.solid-stage{display:grid;place-items:center;width:100%;min-height:220px;perspective:700px;perspective-origin:50% 48%;overflow:hidden}
+.solid3d{position:relative;width:var(--w);height:var(--h);transform-style:preserve-3d;transform:rotateX(var(--rx)) rotateY(var(--ry));transition:transform .18s ease,width .18s,height .18s}
+.solid3d .face{position:absolute;display:block;box-sizing:border-box;border:2px solid #087f78;background:#7bd2c3dd;backface-visibility:visible}
+.solid3d .front,.solid3d .back{width:var(--w);height:var(--h)}
+.solid3d .front{transform:translateZ(calc(var(--d)/2));background:#8be0d0}
+.solid3d .back{transform:rotateY(180deg) translateZ(calc(var(--d)/2));background:#58b9ad}
+.solid3d .right,.solid3d .left{width:var(--d);height:var(--h);left:calc((var(--w) - var(--d))/2)}
+.solid3d .right{transform:rotateY(90deg) translateZ(calc(var(--w)/2));background:#36a99e}
+.solid3d .left{transform:rotateY(-90deg) translateZ(calc(var(--w)/2));background:#a3e8dc}
+.solid3d .top,.solid3d .bottom{width:var(--w);height:var(--d);top:calc((var(--h) - var(--d))/2)}
+.solid3d .top{transform:rotateX(90deg) translateZ(calc(var(--h)/2));background:#c0f2e8}
+.solid3d .bottom{transform:rotateX(-90deg) translateZ(calc(var(--h)/2));background:#258f89}
+.solid3d.pyramid .face{clip-path:polygon(50% 0,100% 100%,0 100%)}
+.solid3d.prism .face{clip-path:polygon(50% 0,100% 25%,100% 100%,0 100%,0 25%)}
+@media(max-width:600px){.solid-stage{min-height:190px}.geometry-svg{height:165px}.grid-measure{grid-template-columns:repeat(var(--cols),minmax(10px,19px));grid-template-rows:repeat(var(--rows),minmax(10px,19px))}}
+@media(prefers-reduced-motion:reduce){.solid3d{transition:none}}
