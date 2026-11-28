@@ -153,3 +153,8 @@ button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{ou
 .solid3d.prism .face{clip-path:polygon(50% 0,100% 25%,100% 100%,0 100%,0 25%)}
 @media(max-width:600px){.solid-stage{min-height:190px}.geometry-svg{height:165px}.grid-measure{grid-template-columns:repeat(var(--cols),minmax(10px,19px));grid-template-rows:repeat(var(--rows),minmax(10px,19px))}}
 @media(prefers-reduced-motion:reduce){.solid3d{transition:none}}
+
+.solid-svg{display:block;width:min(100%,340px);height:auto;max-height:220px;overflow:visible}
+.solid-stage{min-height:210px}
+.grid-measure{grid-template-columns:repeat(var(--cols),minmax(12px,22px));grid-template-rows:repeat(var(--rows),minmax(12px,22px))}
+@media(max-width:600px){.solid-svg{max-height:185px}.solid-stage{min-height:180px}}
