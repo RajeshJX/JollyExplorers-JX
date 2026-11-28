@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Series vs Parallel</title>
+<style>
+:root{--bg:#f6efde;--ink:#1d1b16;--muted:#6b6455;--card:#fffaf0;--accent:#f2b400;--line:#e3d8bd;--chip:#efe5cb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17150f;--ink:#f3ecd9;--muted:#a79f8a;--card:#221f16;--accent:#ffc83d;--line:#2d2a1e;--chip:#2e2a1c}}
+:root[data-theme="dark"]{--bg:#17150f;--ink:#f3ecd9;--muted:#a79f8a;--card:#221f16;--accent:#ffc83d;--line:#2d2a1e;--chip:#2e2a1c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{padding:16px 18px 0}
+h1{margin:0;font-size:18px;letter-spacing:.1em;text-transform:uppercase}
+header p{margin:2px 0 0;font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+#stage{flex:1;min-height:300px;position:relative;touch-action:none;cursor:grab;
+background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:28px 28px}
+canvas{display:block;width:100%;height:100%}
+#hint{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted);pointer-events:none}
+.panel{margin:0 12px 12px;padding:12px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:2px solid var(--ink);border-radius:12px;overflow:hidden}
+.seg button{font:inherit;font-weight:700;font-size:15px;padding:12px;border:0;background:var(--card);color:var(--ink);cursor:pointer}
+.seg button.on{background:var(--accent);color:#1d1b16}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.slots button{font:inherit;font-weight:700;font-size:13px;padding:10px 4px;border-radius:10px;border:1.5px solid var(--ink);background:var(--chip);color:var(--ink);cursor:pointer}
+.slots button.off{opacity:.45;border-style:dashed}
+.stats{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.stats span{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--chip);border:1.5px solid var(--line)}
+#cap{margin:10px 2px 0;font-size:13.5px;line-height:1.5}
+small{display:block;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:10px 0 0}
+@media (min-width:900px){body{height:100vh;display:grid;grid-template-columns:1fr 380px;grid-template-rows:auto 1fr;overflow:hidden}header{grid-column:1/-1}#stage{min-height:0}.panel{margin:12px 12px 12px 0;align-self:start;max-height:100%;overflow:auto}}
+</style>
+</head>
+<body>
+<header><h1>How It’s Wired</h1><p>Simulator 2 · Series vs parallel</p></header>
+<div id="stage"><div id="hint">Drag to rotate</div></div>
+<div class="panel">
+<div class="seg"><button id="ms" class="on">Series</button><button id="mp">Parallel</button></div>
+<small>Tap a bulb to remove or put it back</small>
+<div class="slots"><button id="s0">Bulb 1</button><button id="s1">Bulb 2</button><button id="s2">Bulb 3</button></div>
+<div class="stats"><span id="a"></span><span id="b"></span></div>
+<p id="cap"></p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var stage=$('stage'),par=false,has=[true,true,true];
+var scene=new THREE.Scene();
+var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+stage.appendChild(renderer.domElement);
+var cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,100);
+cam.position.set(9,8,9);cam.lookAt(0,0.5,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0xb8a97c,0.85));
+var sun=new THREE.DirectionalLight(0xffffff,0.6);sun.position.set(5,10,4);scene.add(sun);
+var g=new THREE.Group();scene.add(g);
+var parts=new THREE.Group();g.add(parts);
+var EDGE=new THREE.LineBasicMaterial({color:0x2a2418});
+function mat(c,o){return new THREE.MeshLambertMaterial(Object.assign({color:c},o||{}))}
+function add(m,x,y,z,p){m.position.set(x,y,z);m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry,40),EDGE));(p||g).add(m);return m}
+function box(w,h,d,c,x,y,z,p){return add(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c)),x,y,z,p)}
+function cyl(r,h,c,x,y,z,p){return add(new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,28),mat(c)),x,y,z,p)}
+var W=3,D=2,Y=0.35,CU=0xd9822b;
+var sh=new THREE.Mesh(new THREE.PlaneGeometry(10.5,7.8),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:0.12}));
+sh.rotation.x=-Math.PI/2;sh.position.set(0.3,-0.34,0.3);g.add(sh);
+box(9.2,0.25,6.6,0xcdbb8a,0,-0.2,0);box(8.8,0.12,6.2,0xe6d9b0,0,-0.02,0);
+
+function wire(x1,z1,x2,z2){
+  var w=Math.abs(x2-x1)||0.16,d=Math.abs(z2-z1)||0.16;
+  box(w,0.16,d,CU,(x1+x2)/2,Y,(z1+z2)/2,parts);
+  [[x1,z1],[x2,z2]].forEach(function(c){var s=new THREE.Mesh(new THREE.SphereGeometry(0.15,14,10),mat(CU));s.position.set(c[0],Y,c[1]);parts.add(s)});
+}
+var bulbs=[],loops=[];
+function mkLoop(pts){var segs=[],t=0;for(var i=0;i<pts.length;i++){var a=pts[i],b=pts[(i+1)%pts.length],l=Math.hypot(b[0]-a[0],b[1]-a[1]);segs.push([a,b,l]);t+=l}return{segs:segs,total:t}}
+function build(){
+  while(parts.children.length)parts.remove(parts.children[0]);
+  bulbs=[];loops=[];
+  // battery
+  box(1.1,1.0,1.8,0x34363b,-W,0.5,0,parts);box(1.1,0.3,1.8,0x57b560,-W,1.15,0,parts);
+  box(1.1,0.1,1.8,0xffd34e,-W,0.78,0,parts);cyl(0.2,0.22,0xcfcfcf,-W,1.41,0,parts);
+  var xs,pos;
+  if(!par){
+    wire(-W,D,W,D);wire(W,D,W,-D);wire(W,-D,-W,-D);wire(-W,-D,-W,D);
+    xs=[-2,0,2];pos=xs.map(function(x){return[x,-D]});
+    if(has[0]&&has[1]&&has[2])loops.push(mkLoop([[-W,D],[W,D],[W,-D],[-W,-D]]));
+  }else{
+    xs=[-0.5,1.25,3];
+    wire(-W,D,3,D);wire(-W,-D,3,-D);wire(-W,D,-W,-D);
+    xs.forEach(function(x,i){wire(x,D,x,-D);if(has[i])loops.push(mkLoop([[-W,D],[x,D],[x,-D],[-W,-D]]))});
+    pos=xs.map(function(x){return[x,0]});
+  }
+  pos.forEach(function(p,i){
+    cyl(0.42,0.5,0x7a7a7a,p[0],0.45,p[1],parts);cyl(0.3,0.2,0xb9b9b9,p[0],0.8,p[1],parts);
+    var b={cur:0,m:null,h:null,l:null};
+    if(has[i]){
+      b.m=mat(0xcfd8dc,{emissive:0,transparent:true,opacity:0.95});
+      var s=new THREE.Mesh(new THREE.SphereGeometry(0.68,28,20),b.m);s.position.set(p[0],1.5,p[1]);parts.add(s);
+      b.h=new THREE.Mesh(new THREE.SphereGeometry(1.05,20,14),new THREE.MeshBasicMaterial({color:0xffd34e,transparent:true,opacity:0,depthWrite:false}));
+      b.h.position.copy(s.position);parts.add(b.h);
+      b.l=new THREE.PointLight(0xffc83d,0,8);b.l.position.set(p[0],1.7,p[1]);parts.add(b.l);
+    }
+    bulbs.push(b);
+  });
+}
+var dots=[];
+for(var k=0;k<48;k++){var d=new THREE.Mesh(new THREE.SphereGeometry(0.11,10,8),new THREE.MeshBasicMaterial({color:0xfff0a0}));d.userData.t=(k%16)/16;d.visible=false;g.add(d);dots.push(d)}
+function place(d,lp){
+  var s=d.userData.t*lp.total;
+  for(var i=0;i<lp.segs.length;i++){
+    var sg=lp.segs[i];
+    if(s<=sg[2]){var f=s/sg[2];d.position.set(sg[0][0]+(sg[1][0]-sg[0][0])*f,Y+0.22,sg[0][1]+(sg[1][1]-sg[0][1])*f);return}
+    s-=sg[2];
+  }
+}
+function ui(){
+  $('ms').className=par?'':'on';$('mp').className=par?'on':'';
+  for(var i=0;i<3;i++){$('s'+i).className=has[i]?'':'off';$('s'+i).textContent='Bulb '+(i+1)+(has[i]?'':' (removed)')}
+  var n=has.filter(Boolean).length,load=par?n:(n===3?1/3:0);
+  $('a').textContent=par?'Each bulb gets full voltage':'Voltage is shared by all 3';
+  $('b').textContent='Battery load: '+(load?(+load.toFixed(2))+'×':'none');
+  $('cap').textContent=par
+    ?(n===3?'Parallel: each bulb has its own path back to the battery, so all stay fully bright. The battery supplies more current in total.'
+      :n?'A bulb is removed, but the other branches still work. That is why house lights are wired in parallel.':'No bulbs left, so no current flows.')
+    :(n===3?'Series: there is only one path, so the 3 bulbs share the voltage and each is dim.'
+      :'Series: one bulb is missing, so the loop is broken and every bulb goes out.');
+}
+function set(fn){fn();build();ui()}
+$('ms').onclick=function(){set(function(){par=false})};
+$('mp').onclick=function(){set(function(){par=true})};
+[0,1,2].forEach(function(i){$('s'+i).onclick=function(){set(function(){has[i]=!has[i]})}});
+build();ui();
+
+var drag=false,lx=0;
+stage.addEventListener('pointerdown',function(e){drag=true;lx=e.clientX;stage.style.cursor='grabbing'});
+addEventListener('pointerup',function(){drag=false;stage.style.cursor='grab'});
+addEventListener('pointermove',function(e){if(drag){g.rotation.y+=(e.clientX-lx)*0.01;lx=e.clientX}});
+function resize(){
+  var w=stage.clientWidth,h=stage.clientHeight,s=5.8,asp=w/h;
+  renderer.setSize(w,h,false);
+  cam.left=-s*asp;cam.right=s*asp;cam.top=s;cam.bottom=-s;cam.updateProjectionMatrix();
+}
+addEventListener('resize',resize);resize();
+
+var clock=new THREE.Clock();
+(function loop(){
+  var dt=clock.getDelta(),t=clock.elapsedTime;
+  bulbs.forEach(function(b,i){
+    if(!b.m)return;
+    var lit=par?1:(loops.length?0.38:0);
+    var target=(has[i]&&loops.length&&(par||lit))?lit:0;
+    b.cur+=(target-b.cur)*Math.min(1,dt*6);
+    var e=b.cur;b.m.emissive.setRGB(e,e*0.78,e*0.24);b.h.material.opacity=0.28*e;b.l.intensity=1.8*e;
+  });
+  var spd=par?2.2:0.9;
+  dots.forEach(function(d,k){
+    var li=Math.floor(k/16),lp=loops[li];
+    if(!lp){d.visible=false;return}
+    d.visible=true;d.userData.t=(d.userData.t+dt*spd/lp.total)%1;place(d,lp);
+  });
+  g.position.y=Math.sin(t*1.2)*0.04;
+  renderer.render(scene,cam);
+  requestAnimationFrame(loop);
+})();
+})();
+</script>
+</body>
+</html>

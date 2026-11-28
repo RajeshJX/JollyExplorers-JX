@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How a Circuit Works</title>
+<style>
+:root{--bg:#f6efde;--ink:#1d1b16;--muted:#6b6455;--card:#fffaf0;--accent:#f2b400;--line:#e3d8bd;--chip:#efe5cb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17150f;--ink:#f3ecd9;--muted:#a79f8a;--card:#221f16;--accent:#ffc83d;--line:#2d2a1e;--chip:#2e2a1c}}
+:root[data-theme="dark"]{--bg:#17150f;--ink:#f3ecd9;--muted:#a79f8a;--card:#221f16;--accent:#ffc83d;--line:#2d2a1e;--chip:#2e2a1c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Space Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{padding:16px 18px 0;display:flex;justify-content:space-between;align-items:flex-end}
+h1{margin:0;font-size:18px;letter-spacing:.1em;text-transform:uppercase}
+header p{margin:2px 0 0;font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--chip);border:1.5px solid var(--line)}
+#stage{flex:1;min-height:300px;position:relative;touch-action:none;cursor:grab;
+background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:28px 28px}
+canvas{display:block;width:100%;height:100%}
+#hint{position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted);pointer-events:none}
+.panel{margin:0 12px 12px;padding:12px;background:var(--card);border:1.5px solid var(--line);border-radius:16px;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.main{font:inherit;font-weight:700;width:100%;padding:13px;border-radius:12px;border:2px solid var(--ink);background:var(--accent);color:#1d1b16;cursor:pointer;font-size:16px;box-shadow:0 3px 0 var(--ink)}
+.main:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.rows{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.step{background:var(--chip);border:1.5px solid var(--line);border-radius:12px;padding:8px 10px}
+.step small{display:block;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.ctl{display:flex;align-items:center;justify-content:space-between}
+.ctl b{font-size:20px}
+.ctl button{width:34px;height:34px;border-radius:10px;border:1.5px solid var(--ink);background:var(--card);color:var(--ink);font-size:20px;font-weight:700;cursor:pointer}
+.ctl button:disabled{opacity:.3}
+.stats{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.stats span{font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:var(--chip);border:1.5px solid var(--line)}
+#cap{margin:10px 2px 0;font-size:13.5px;line-height:1.5}
+@media (min-width:900px){body{height:100vh;display:grid;grid-template-columns:1fr 380px;grid-template-rows:auto 1fr;overflow:hidden}header{grid-column:1/-1}#stage{min-height:0}.panel{margin:12px 12px 12px 0;align-self:start;max-height:100%;overflow:auto}}
+</style>
+</head>
+<body>
+<header><div><h1>How It’s Wired</h1><p>Lesson 1 · The simple circuit</p></div><span class="badge" id="brt">0%</span></header>
+<div id="stage"><div id="hint">Drag to rotate</div></div>
+<div class="panel">
+<button class="main" id="sw">Switch ON</button>
+<div class="rows">
+ <div class="step"><small>Bulbs</small><div class="ctl"><button id="bm">−</button><b id="bn">1</b><button id="bp">+</button></div></div>
+ <div class="step"><small>Batteries</small><div class="ctl"><button id="tm">−</button><b id="tn">1</b><button id="tp">+</button></div></div>
+</div>
+<div class="stats"><span id="sv"></span><span id="sc"></span></div>
+<p id="cap"></p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var stage=$('stage'),on=false,nB=1,nT=1;
+var scene=new THREE.Scene();
+var renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+stage.appendChild(renderer.domElement);
+var cam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,100);
+cam.position.set(9,8,9);cam.lookAt(0,0.5,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0xb8a97c,0.85));
+var sun=new THREE.DirectionalLight(0xffffff,0.6);sun.position.set(5,10,4);scene.add(sun);
+var g=new THREE.Group();scene.add(g);
+var parts=new THREE.Group();g.add(parts);
+var EDGE=new THREE.LineBasicMaterial({color:0x2a2418});
+
+function mat(c,o){return new THREE.MeshLambertMaterial(Object.assign({color:c},o||{}))}
+function add(m,x,y,z,p){m.position.set(x,y,z);m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry,40),EDGE));(p||g).add(m);return m}
+function box(w,h,d,c,x,y,z,p){return add(new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c)),x,y,z,p)}
+function cyl(r,h,c,x,y,z,p){return add(new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,28),mat(c)),x,y,z,p)}
+
+var W=3,D=2,Y=0.35;
+// layered base plate + soft shadow
+var sh=new THREE.Mesh(new THREE.PlaneGeometry(10.5,7.8),new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0.12}));
+sh.rotation.x=-Math.PI/2;sh.position.set(0.3,-0.34,0.3);g.add(sh);
+box(9.2,0.25,6.6,0xcdbb8a,0,-0.2,0);
+box(8.8,0.12,6.2,0xe6d9b0,0,-0.02,0);
+// copper wires
+var cu=0xd9822b;
+[[0,Y,D,2*W,.16,.16],[0,Y,-D,2*W,.16,.16],[W,Y,0,.16,.16,2*D],[-W,Y,0,.16,.16,2*D]]
+ .forEach(function(a){box(a[3],a[4],a[5],cu,a[0],a[1],a[2])});
+[[W,D],[W,-D],[-W,D],[-W,-D]].forEach(function(c){add(new THREE.Mesh(new THREE.SphereGeometry(0.15,16,12),mat(cu)),c[0],Y,c[1])});
+
+// switch (front, fixed)
+box(1.7,0.2,1.1,0xefe7d2,0,0.1,D);
+var pivot=new THREE.Group();pivot.position.set(-0.6,0.4,D);g.add(pivot);
+box(1.35,0.1,0.24,0xd64533,0.67,0,0,pivot);cyl(0.07,0.12,0xffffff,1.3,0.02,0,pivot);
+cyl(0.11,0.3,0x8a8a8a,-0.6,0.32,D);cyl(0.11,0.3,0x8a8a8a,0.75,0.32,D);
+
+// rebuildable parts
+var bulbs=[];
+function build(){
+  while(parts.children.length)parts.remove(parts.children[0]);
+  bulbs=[];
+  var zs=nT===1?[0]:[-0.95,0.95];
+  zs.forEach(function(z){
+    box(1.1,1.0,1.4,0x34363b,-W,0.5,z,parts);
+    box(1.1,0.3,1.4,0x57b560,-W,1.15,z,parts);
+    box(1.1,0.1,1.4,0xffd34e,-W,0.78,z,parts);
+    cyl(0.2,0.22,0xcfcfcf,-W,1.41,z,parts);
+  });
+  var xs=nB===1?[0]:nB===2?[-1.3,1.3]:[-2,0,2];
+  xs.forEach(function(x){
+    cyl(0.42,0.5,0x7a7a7a,x,0.45,-D,parts);
+    cyl(0.3,0.2,0xb9b9b9,x,0.8,-D,parts);
+    var bm=mat(0xcfd8dc,{emissive:0x000000,transparent:true,opacity:0.95});
+    var b=new THREE.Mesh(new THREE.SphereGeometry(0.68,28,20),bm);b.position.set(x,1.5,-D);parts.add(b);
+    var halo=new THREE.Mesh(new THREE.SphereGeometry(1.05,20,14),new THREE.MeshBasicMaterial({color:0xffd34e,transparent:true,opacity:0,depthWrite:false}));
+    halo.position.copy(b.position);parts.add(halo);
+    var l=new THREE.PointLight(0xffc83d,0,9);l.position.set(x,1.7,-D);parts.add(l);
+    bulbs.push({m:bm,h:halo,l:l});
+  });
+}
+
+// current dots
+var path=[[-W,D],[W,D],[W,-D],[-W,-D]],segs=[],total=0;
+for(var i=0;i<4;i++){var a=path[i],b=path[(i+1)%4],l=Math.hypot(b[0]-a[0],b[1]-a[1]);segs.push([a,b,l]);total+=l}
+var dots=[];
+for(var k=0;k<30;k++){
+  var d=new THREE.Mesh(new THREE.SphereGeometry(0.11,10,8),new THREE.MeshBasicMaterial({color:0xfff0a0}));
+  d.userData.t=k/30;d.visible=false;g.add(d);dots.push(d);
+}
+function place(d){
+  var s=d.userData.t*total;
+  for(var i=0;i<4;i++){
+    if(s<=segs[i][2]){var f=s/segs[i][2],a=segs[i][0],b=segs[i][1];
+      d.position.set(a[0]+(b[0]-a[0])*f,Y+0.22,a[1]+(b[1]-a[1])*f);return}
+    s-=segs[i][2];
+  }
+}
+
+var bright=0;
+function ui(){
+  $('sw').textContent=on?'Switch OFF':'Switch ON';
+  $('bn').textContent=nB;$('tn').textContent=nT;
+  $('bm').disabled=nB<=1;$('bp').disabled=nB>=3;$('tm').disabled=nT<=1;$('tp').disabled=nT>=2;
+  var v=nT*1.5,p=on?Math.round(nT/nB*100):0;
+  $('sv').textContent='Voltage '+v.toFixed(1)+' V';
+  $('sc').textContent='Each bulb gets '+(v/nB).toFixed(1)+' V';
+  $('brt').textContent='Brightness '+p+'%';
+  dots.forEach(function(d){d.visible=on});
+  $('cap').textContent=!on
+    ?'The switch is open, which leaves a gap in the loop. No current can flow, so the bulbs stay dark.'
+    :nT/nB>1?'More battery push than the bulb needs. It glows extra bright, and a real bulb could burn out.'
+    :nB>1?'The bulbs are in series, so they share the voltage. More bulbs means each one is dimmer.'
+    :'The loop is complete, so current flows from the battery through the bulb and back.';
+}
+function set(fn){fn();build();ui()}
+$('sw').onclick=function(){set(function(){on=!on})};
+$('bp').onclick=function(){set(function(){nB++})};
+$('bm').onclick=function(){set(function(){nB--})};
+$('tp').onclick=function(){set(function(){nT++})};
+$('tm').onclick=function(){set(function(){nT--})};
+build();ui();
+
+var drag=false,lx=0;
+stage.addEventListener('pointerdown',function(e){drag=true;lx=e.clientX;stage.style.cursor='grabbing'});
+addEventListener('pointerup',function(){drag=false;stage.style.cursor='grab'});
+addEventListener('pointermove',function(e){if(drag){g.rotation.y+=(e.clientX-lx)*0.01;lx=e.clientX}});
+function resize(){
+  var w=stage.clientWidth,h=stage.clientHeight,s=5.8,asp=w/h;
+  renderer.setSize(w,h,false);
+  cam.left=-s*asp;cam.right=s*asp;cam.top=s;cam.bottom=-s;cam.updateProjectionMatrix();
+}
+addEventListener('resize',resize);resize();
+
+var ang=0,clock=new THREE.Clock();
+(function loop(){
+  var dt=clock.getDelta(),t=clock.elapsedTime;
+  ang+=((on?0:0.9)-ang)*Math.min(1,dt*10);pivot.rotation.z=ang;
+  var target=on?nT/nB:0;bright+=(target-bright)*Math.min(1,dt*6);
+  var e=Math.min(1,bright);
+  bulbs.forEach(function(b){
+    b.m.emissive.setRGB(e,e*0.78,e*0.24);
+    b.h.material.opacity=0.28*e;
+    b.l.intensity=1.8*bright;
+  });
+  if(!drag&&!on)g.rotation.y+=0;
+  if(on)dots.forEach(function(d){d.userData.t=(d.userData.t+dt*0.07*nT)%1;place(d)});
+  g.position.y=Math.sin(t*1.2)*0.04;
+  renderer.render(scene,cam);
+  requestAnimationFrame(loop);
+})();
+})();
+</script>
+</body>
+</html>
