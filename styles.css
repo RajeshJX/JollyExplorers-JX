@@ -9,3 +9,14 @@
 @media(max-width:380px){.hero h1{font-size:30px}.category-card small{display:none}.project-card{grid-template-columns:88px 1fr}}
 @media(pointer:coarse){.project-go,.sim-button,.category-card{min-height:44px}}
 .project-card{transition:transform .15s}.project-card:hover{transform:translateY(-3px)}
+
+/* Mathematics World featured entry inside Explore sections */
+.math-feature-card{position:relative;display:grid;grid-template-columns:180px 1fr auto;align-items:center;gap:22px;margin:0 0 15px;padding:18px 22px;overflow:hidden;border:1px solid #ccebe5;border-radius:20px;background:linear-gradient(105deg,#e5f7f2 0%,#e4f3ff 58%,#fff0d7 100%);color:var(--ink);text-decoration:none;box-shadow:0 8px 22px #18485a0c;transition:transform .16s,box-shadow .16s}
+.math-feature-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px #18485a18}
+.math-feature-art{display:flex;align-items:center;justify-content:center;gap:8px;min-height:92px;border-radius:15px;background:#ffffffa6}
+.math-feature-art span{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:white;font-size:23px;box-shadow:0 3px 8px #18485a10}
+.math-feature-copy h3{margin:4px 0;color:var(--navy);font-size:21px}
+.math-feature-copy>p:not(.eyebrow){max-width:650px;margin:0 0 10px;color:#55717c;font-size:12px;line-height:1.5}
+.math-feature-cta{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:10px;background:var(--teal);color:white;font-size:12px;font-weight:900;box-shadow:0 3px #11867d}
+.math-feature-spark{padding-right:8px;color:#e5a83e;font-size:38px}
+@media(max-width:620px){.math-feature-card{grid-template-columns:1fr;gap:10px;padding:14px}.math-feature-art{min-height:66px}.math-feature-art span{width:37px;height:37px;font-size:20px}.math-feature-copy h3{font-size:19px}.math-feature-spark{position:absolute;right:14px;top:10px;font-size:24px}}
