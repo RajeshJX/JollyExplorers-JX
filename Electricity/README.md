@@ -8,6 +8,9 @@ simulators/fuse-overload.html    Simulator 3: fuse and overload
 simulators/staircase-switch.html Simulator 4: two-way (staircase) switches
 simulators/solar-power.html      Simulator 5: solar panel, battery and lamp
 simulators/electric-motor.html   Simulator 6: electric motor
+simulators/electromagnet.html    Simulator 7: electromagnet
+simulators/transformer.html      Simulator 8: transformer
+simulators/static-electricity.html Simulator 9: static electricity
 
 Each simulator is a standalone file. Edit or replace any one without touching the others.
 
